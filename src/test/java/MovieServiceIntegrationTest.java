@@ -10,15 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.FileNotFoundException;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 
 @ExtendWith(SpringExtension.class)
-@Sql(scripts = { "/movie-data.sql" })
+@SqlGroup({
+        @Sql(scripts = "/movie-data.sql"),
+        @Sql(scripts = "/movie-data-cleanup.sql", executionPhase = AFTER_TEST_METHOD)
+})
 @SpringBootTest(classes = LikeApplication.class)
 @Slf4j
 public class MovieServiceIntegrationTest {
@@ -50,6 +55,7 @@ public class MovieServiceIntegrationTest {
     }
 
     @Test
+    //should rollback for unchecked exception
     public void shouldFailToUpdateMovie() throws FileNotFoundException {
         //given
         Movie oldMovie = movieService.getMovie(2L);
