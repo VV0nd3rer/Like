@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class ModifyMediaEventListener {
+public class MediaModificationAttemptEventListener {
 
     @EventListener
     public void processMovieModifyEvent(ModifyEvent<?> event) {
-        log.info("Media {} event for media: {}",
+        log.info("Attempt to modify with event {} for media: {}",
                 event.getModificationType().name(), event.getMedia());
     }
 }

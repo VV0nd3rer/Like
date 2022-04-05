@@ -1,18 +1,23 @@
 import com.kverchi.like.LikeApplication;
 import com.kverchi.like.entity.Movie;
+import com.kverchi.like.events.listeners.MediaModificationAttemptEventListener;
+import com.kverchi.like.events.listeners.MediaModificationDoneEventListener;
 import com.kverchi.like.service.LoggerService;
 import com.kverchi.like.service.MovieService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -30,6 +35,12 @@ public class MovieServiceIntegrationTest {
 
     @MockBean
     private LoggerService loggerService;
+
+    @SpyBean
+    private MediaModificationAttemptEventListener mediaModificationAttemptEventListener;
+
+    @SpyBean
+    private MediaModificationDoneEventListener mediaModificationDoneEventListener;
 
 
     @Test
@@ -51,6 +62,9 @@ public class MovieServiceIntegrationTest {
         //then
         Movie updatedMovie = movieService.getMovie(2L);
         Assertions.assertEquals("My custom title", updatedMovie.getTitle());
+
+        Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
+        Mockito.verify(mediaModificationDoneEventListener).processMovieModifyEvent(any());
     }
 
     @Test
@@ -64,6 +78,9 @@ public class MovieServiceIntegrationTest {
 
         //then
         Assertions.assertNull(movieService.getMovie(2L));
+
+        Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
+        Mockito.verify(mediaModificationDoneEventListener).processMovieModifyEvent(any());
     }
 
     @Test
@@ -85,5 +102,9 @@ public class MovieServiceIntegrationTest {
         //then
         Movie updatedMovie = movieService.getMovie(2L);
         Assertions.assertEquals("Avengers: Endgame", updatedMovie.getTitle());
+
+        Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
+        Mockito.verify(mediaModificationDoneEventListener,
+                Mockito.times(0)).processMovieModifyEvent(any());
     }
 }

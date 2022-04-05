@@ -27,16 +27,20 @@ public class MovieService {
     @Transactional
     public void updateMovie(Movie movie) {
         movieRepository.save(movie);
-        loggerService.log("Movie with id " + movie.getId() + " was saved.");
+
         final MovieModifyEvent movieModifyEvent = new MovieModifyEvent(movie, ModificationType.UPDATE);
         applicationEventPublisher.publishEvent(movieModifyEvent);
+
+        loggerService.log("Movie with id " + movie.getId() + " was saved.");
     }
 
     @Transactional
     public void deleteMovie(Movie movie) {
         movieRepository.delete(movie);
-        loggerService.log("Movie with id " + movie.getId() + " was deleted.");
+
         final MovieModifyEvent movieModifyEvent = new MovieModifyEvent(movie, ModificationType.DELETE);
         applicationEventPublisher.publishEvent(movieModifyEvent);
+
+        loggerService.log("Movie with id " + movie.getId() + " was deleted.");
     }
 }
