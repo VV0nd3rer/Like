@@ -13,8 +13,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.FileNotFoundException;
-
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -44,6 +42,7 @@ public class MovieServiceIntegrationTest {
     public void shouldUpdateMovie() {
         //given
         Movie oldMovie = movieService.getMovie(2L);
+        Assertions.assertEquals("Avengers: Endgame", oldMovie.getTitle());
 
         //when
         oldMovie.setTitle("My custom title");
@@ -56,7 +55,7 @@ public class MovieServiceIntegrationTest {
 
     @Test
     //should rollback for unchecked exception
-    public void shouldFailToUpdateMovie() throws FileNotFoundException {
+    public void shouldFailToUpdateMovie() {
         //given
         Movie oldMovie = movieService.getMovie(2L);
         Assertions.assertEquals("Avengers: Endgame", oldMovie.getTitle());
@@ -65,7 +64,6 @@ public class MovieServiceIntegrationTest {
         oldMovie.setTitle("My custom title");
         doThrow(new RuntimeException()).when(loggerService).log(anyString());
 
-//        loggerService.log("Movie with id 2 was saved.");
         try {
             movieService.updateMovie(oldMovie);
         } catch (RuntimeException e) {
