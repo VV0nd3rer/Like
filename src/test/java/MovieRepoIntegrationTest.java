@@ -1,5 +1,5 @@
 import com.kverchi.like.LikeApplication;
-import com.kverchi.like.model.Movie;
+import com.kverchi.like.entity.Movie;
 import com.kverchi.like.repository.MovieRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

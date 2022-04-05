@@ -1,4 +1,4 @@
-package com.kverchi.like.model;
+package com.kverchi.like.entity;
 
 import lombok.Getter;
 import lombok.Setter;

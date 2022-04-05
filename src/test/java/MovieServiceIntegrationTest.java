@@ -1,5 +1,5 @@
 import com.kverchi.like.LikeApplication;
-import com.kverchi.like.model.Movie;
+import com.kverchi.like.entity.Movie;
 import com.kverchi.like.service.LoggerService;
 import com.kverchi.like.service.MovieService;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +51,19 @@ public class MovieServiceIntegrationTest {
         //then
         Movie updatedMovie = movieService.getMovie(2L);
         Assertions.assertEquals("My custom title", updatedMovie.getTitle());
+    }
+
+    @Test
+    public void shouldDeleteMovie() {
+        //given
+        Movie movie = movieService.getMovie(2L);
+        Assertions.assertEquals("Avengers: Endgame", movie.getTitle());
+
+        //when
+        movieService.deleteMovie(movie);
+
+        //then
+        Assertions.assertNull(movieService.getMovie(2L));
     }
 
     @Test

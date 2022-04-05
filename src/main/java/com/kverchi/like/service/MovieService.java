@@ -1,7 +1,8 @@
 package com.kverchi.like.service;
 
-import com.kverchi.like.events.MovieUpdatedEvent;
-import com.kverchi.like.model.Movie;
+import com.kverchi.like.entity.Movie;
+import com.kverchi.like.events.ModificationType;
+import com.kverchi.like.events.MovieModifyEvent;
 import com.kverchi.like.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,7 +28,15 @@ public class MovieService {
     public void updateMovie(Movie movie) {
         movieRepository.save(movie);
         loggerService.log("Movie with id " + movie.getId() + " was saved.");
-        final MovieUpdatedEvent movieUpdatedEvent = new MovieUpdatedEvent(movie);
-        applicationEventPublisher.publishEvent(movieUpdatedEvent);
+        final MovieModifyEvent movieModifyEvent = new MovieModifyEvent(movie, ModificationType.UPDATE);
+        applicationEventPublisher.publishEvent(movieModifyEvent);
+    }
+
+    @Transactional
+    public void deleteMovie(Movie movie) {
+        movieRepository.delete(movie);
+        loggerService.log("Movie with id " + movie.getId() + " was deleted.");
+        final MovieModifyEvent movieModifyEvent = new MovieModifyEvent(movie, ModificationType.DELETE);
+        applicationEventPublisher.publishEvent(movieModifyEvent);
     }
 }
