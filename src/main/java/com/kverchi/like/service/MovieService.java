@@ -4,21 +4,19 @@ import com.kverchi.like.entity.Movie;
 import com.kverchi.like.events.ModificationType;
 import com.kverchi.like.events.MovieModifyEvent;
 import com.kverchi.like.repository.MovieRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@AllArgsConstructor
 public class MovieService {
-    @Autowired
-    private MovieRepository movieRepository;
+    private final MovieRepository movieRepository;
 
-    @Autowired
-    private LoggerService loggerService;
+    private final LoggerService loggerService;
 
-    @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public Movie getMovie(Long id) {
         return movieRepository.findById(id).orElse(null);
