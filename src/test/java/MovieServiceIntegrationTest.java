@@ -42,7 +42,6 @@ public class MovieServiceIntegrationTest {
     @SpyBean
     private MediaModificationDoneEventListener mediaModificationDoneEventListener;
 
-
     @Test
     public void shouldFindMovieById() {
         Movie movie = movieService.getMovie(2L);
@@ -62,6 +61,25 @@ public class MovieServiceIntegrationTest {
         //then
         Movie updatedMovie = movieService.getMovie(2L);
         Assertions.assertEquals("My custom title", updatedMovie.getTitle());
+
+        Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
+        Mockito.verify(mediaModificationDoneEventListener).processMovieModifyEvent(any());
+    }
+
+    @Test
+    public void shouldUpdateMovieWhileCheck() {
+        //given
+        Movie oldMovie = movieService.getMovie(2L);
+        Assertions.assertEquals("Avengers: Endgame", oldMovie.getTitle());
+
+        //when
+        oldMovie.setDescription("parental guidance suggested");
+        movieService.checkMovie(oldMovie, "PG-13");
+
+        //then
+        Movie updatedMovie = movieService.getMovie(2L);
+        Assertions.assertEquals("parental guidance suggested", updatedMovie.getDescription());
+
 
         Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
         Mockito.verify(mediaModificationDoneEventListener).processMovieModifyEvent(any());
@@ -102,6 +120,32 @@ public class MovieServiceIntegrationTest {
         //then
         Movie updatedMovie = movieService.getMovie(2L);
         Assertions.assertEquals("Avengers: Endgame", updatedMovie.getTitle());
+
+        Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
+        Mockito.verify(mediaModificationDoneEventListener,
+                Mockito.times(0)).processMovieModifyEvent(any());
+    }
+
+    @Test
+    //should rollback for unchecked exception
+    public void shouldFailToUpdateMovieWhileCheck() {
+        //given
+        Movie oldMovie = movieService.getMovie(2L);
+        Assertions.assertEquals("Avengers: Endgame", oldMovie.getTitle());
+        Assertions.assertEquals("", oldMovie.getDescription());
+
+        //when
+        oldMovie.setDescription("parental guidance suggested");
+        doThrow(new RuntimeException()).when(loggerService).log(anyString());
+
+        try {
+            movieService.checkMovie(oldMovie, "PG-13");
+        } catch (RuntimeException e) {
+            log.info("Exception happened: {}", e.getMessage());
+        }
+        //then
+        Movie updatedMovie = movieService.getMovie(2L);
+        Assertions.assertEquals("", updatedMovie.getDescription());
 
         Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
         Mockito.verify(mediaModificationDoneEventListener,

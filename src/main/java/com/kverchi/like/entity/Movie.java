@@ -19,4 +19,5 @@ public class Movie {
     private String director;
     private String rating;
     private int duration;
+    private String description;
 }
