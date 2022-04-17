@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
-public class MovieService {
+public class MovieService implements MSIface{
     private final MovieRepository movieRepository;
 
     private final LoggerService loggerService;
@@ -29,15 +29,17 @@ public class MovieService {
      * does not lead to an actual transaction at runtime even if the invoked method is marked with @Transactional
      * https://docs.spring.io/spring-framework/docs/current/reference/html/data-access.html#transaction
      */
-//    Option 2
+//    Option 2 - mark this method @Transactional too
 //    But calling method updateMovie() will ignore @Transaction annotation on it (updateMovie method)
-//    @Transactional
+    @Transactional
+    @Override
     public void checkMovie(Movie movie, String rating) {
         Movie originalMovie = movieRepository.findById(movie.getId()).orElse(null);
         if(originalMovie != null && originalMovie.getRating().equals(rating) && originalMovie.getDescription().isEmpty()) {
             movie.setDescription("parental guidance suggested");
-//            This won't work - only external method calls coming in through the proxy are intercepted
-//            updateMovie(movie);
+//            This won't work (without marking this method as @Transactional - Option 2) - only external method calls coming
+//            in through the proxy are intercepted
+            updateMovie(movie);
 
 //            Option 1
 //            You could use external method call instead, but it's not best solution
@@ -54,6 +56,7 @@ public class MovieService {
     }
 
     @Transactional
+    @Override
     public void updateMovie(Movie movie) {
         movieRepository.save(movie);
 

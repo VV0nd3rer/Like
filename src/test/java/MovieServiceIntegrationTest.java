@@ -3,7 +3,9 @@ import com.kverchi.like.entity.Movie;
 import com.kverchi.like.events.listeners.MediaModificationAttemptEventListener;
 import com.kverchi.like.events.listeners.MediaModificationDoneEventListener;
 import com.kverchi.like.service.LoggerService;
+import com.kverchi.like.service.MSIface;
 import com.kverchi.like.service.MovieService;
+import com.kverchi.like.service.MovieServiceProxyHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,8 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.lang.reflect.Proxy;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -78,6 +82,28 @@ public class MovieServiceIntegrationTest {
 
         //then
         Movie updatedMovie = movieService.getMovie(2L);
+        Assertions.assertEquals("parental guidance suggested", updatedMovie.getDescription());
+
+
+        Mockito.verify(mediaModificationAttemptEventListener).processMovieModifyEvent(any());
+        Mockito.verify(mediaModificationDoneEventListener).processMovieModifyEvent(any());
+    }
+
+    @Test
+    public void shouldUpdateMovieWhileCheckViaProxy() {
+        MSIface proxiedObj = (MSIface) Proxy.newProxyInstance(MSIface.class.getClassLoader(),
+                new Class[] { MSIface.class }, new MovieServiceProxyHandler(movieService));
+
+        //given
+        Movie oldMovie = proxiedObj.getMovie(2L);
+        Assertions.assertEquals("Avengers: Endgame", oldMovie.getTitle());
+
+        //when
+        oldMovie.setDescription("parental guidance suggested");
+        proxiedObj.checkMovie(oldMovie, "PG-13");
+
+        //then
+        Movie updatedMovie = proxiedObj.getMovie(2L);
         Assertions.assertEquals("parental guidance suggested", updatedMovie.getDescription());
 
 
